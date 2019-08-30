@@ -7,7 +7,7 @@ spec:
   template:
     spec:
       containers:
-      - image: ftzm/typespeed:d6f722cbb2
+      - image: ftzm/typespeed:a4fdde28f2
         name: typespeed
         ports:
         - containerPort: 80
