@@ -1,1 +1,52 @@
 apiVersion: apps/v1
+kind: Deployment
+spec:
+  selector:
+    matchLabels:
+      app: typespeed
+  template:
+    spec:
+      containers:
+      - image: ftzm/typespeed:d6f722cbb2
+        name: typespeed
+        ports:
+        - containerPort: 80
+    metadata:
+      name: typespeed
+      labels:
+        app: typespeed
+  replicas: 1
+metadata:
+  name: typespeed
+
+---
+apiVersion: v1
+kind: Service
+spec:
+  selector:
+    app: typespeed
+  ports:
+  - targetPort: 80
+    name: http
+    port: 80
+metadata:
+  name: typespeed
+  labels:
+    app: typespeed
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+spec:
+  hosts:
+  - typespeed.fitzsimmons.io
+  http:
+  - route:
+    - destination:
+        host: typespeed
+        port:
+          number: 80
+  gateways:
+  - main-gateway
+metadata:
+  name: typespeed
