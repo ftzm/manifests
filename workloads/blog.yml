@@ -7,7 +7,7 @@ spec:
   template:
     spec:
       containers:
-      - image: ftzm/blog:0.0.2-103df3a921
+      - image: ftzm/blog:0.1.0-fc6d1d2117
         name: blog
         ports:
         - containerPort: 80
