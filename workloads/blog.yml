@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+spec:
+  selector:
+    matchLabels:
+      app: blog
+  template:
+    spec:
+      containers:
+      - image: ftzm/blog:0.0.2-103df3a921
+        name: blog
+        ports:
+        - containerPort: 80
+    metadata:
+      name: blog
+      labels:
+        app: blog
+  replicas: 1
+metadata:
+  name: blog
+
+---
+apiVersion: v1
+kind: Service
+spec:
+  selector:
+    app: blog
+  ports:
+  - targetPort: 80
+    name: http
+    port: 80
+metadata:
+  name: blog
+  labels:
+    app: blog
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+spec:
+  hosts:
+  - blog.fitzsimmons.io
+  - www.fitzsimmons.io
+  - fitzsimmons.io
+  http:
+  - route:
+    - destination:
+        host: blog
+        port:
+          number: 80
+  gateways:
+  - main-gateway
+metadata:
+  name: blog
