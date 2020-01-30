@@ -1,54 +1,77 @@
 apiVersion: apps/v1
 kind: Deployment
+metadata:
+  name: blog
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: blog
   template:
+    metadata:
+      labels:
+        app: blog
+      name: blog
     spec:
       containers:
-      - image: ftzm/blog:0.1.2-d22ed1d649
+      - image: "ftzm/blog:0.1.2-d22ed1d649"
         name: blog
         ports:
         - containerPort: 80
-    metadata:
-      name: blog
-      labels:
-        app: blog
-  replicas: 1
-metadata:
-  name: blog
 
 ---
 apiVersion: v1
 kind: Service
-spec:
-  selector:
-    app: blog
-  ports:
-  - targetPort: 80
-    name: http
-    port: 80
 metadata:
-  name: blog
   labels:
+    app: blog
+  name: blog
+spec:
+  ports:
+  - port: 80
+  selector:
     app: blog
 
 ---
-apiVersion: networking.istio.io/v1alpha3
-kind: VirtualService
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: blog
 spec:
-  hosts:
+  rules:
+  - host: blog.fitzsimmons.io
+    http:
+      paths:
+      - backend:
+          serviceName: blog
+          servicePort: 80
+  - host: www.fitzsimmons.io
+    http:
+      paths:
+      - backend:
+          serviceName: blog
+          servicePort: 80
+  - host: fitzsimmons.io
+    http:
+      paths:
+      - backend:
+          serviceName: blog
+          servicePort: 80
+  tls:
+  - secretName: "blog-crt-secret"
+
+---
+apiVersion: "cert-manager.io/v1alpha2"
+kind: Certificate
+metadata:
+  name: blog
+spec:
+  dnsNames:
   - blog.fitzsimmons.io
   - www.fitzsimmons.io
   - fitzsimmons.io
-  http:
-  - route:
-    - destination:
-        host: blog
-        port:
-          number: 80
-  gateways:
-  - main-gateway
-metadata:
-  name: blog
+  issuerRef:
+    group: "cert-manager.io"
+    kind: ClusterIssuer
+    name: "letsencrypt-prod"
+  secretName: "blog-crt-secret"
